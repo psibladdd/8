@@ -1,0 +1,123 @@
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>3D Mega City with Pure Three.js</title>
+        <style>
+            body {
+                margin: 0;
+                overflow: hidden;
+                font-family: Arial, sans-serif;
+            }
+            #ui {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                z-index: 100;
+                background: rgba(255,255,255,0.7);
+                padding: 10px;
+                border-radius: 5px;
+            }
+            button {
+                padding: 8px 12px;
+                margin-right: 10px;
+                background: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            button:hover {
+                background: #45a049;
+            }
+            #stats {
+                margin-top: 10px;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="ui">
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/libs/stats.min.js"></script>
+
+        <script>
+            // Инициализация сцены
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            camera.position.set(30, 50, 70);
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.minDistance = 20;
+            controls.maxDistance = 200;
+            controls.minPolarAngle = Math.PI / 6;
+            controls.maxPolarAngle = Math.PI / 2;
+
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(20, 40, 20);
+            scene.add(directionalLight);
+
+            let isNight = false;
+            let buildingCount = 9;
+
+            // Земля (увеличена в 5 раз)
+            const groundSize = 500;
+            const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x2e8b57,
+                roughness: 0.8
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            scene.add(ground);
+
+            const createBuilding = (width, height, depth, x, z, color, type = 'normal') => {
+                const group = new THREE.Group();
+                group.position.set(x, height/2, z);
+                const buildingGeometry = new THREE.BoxGeometry(width, height, depth);
+                let material;
+               material = new THREE.MeshStandardMaterial({
+                        color: new THREE.Color(color),
+                        roughness: 0.7,
+                        metalness: 0.1
+                    });
+                const building = new THREE.Mesh(buildingGeometry, material);
+                group.add(building);
+                return group;
+            };
+            
+            const initialBuildings = [
+    { x: 170, z: 20, width: 18, height: 41, depth: 18, color: "#708090", type: 'normal' },
+    { x: 270, z: 50, width: 23, height: 66, depth: 23, color: "#9400D4", type: 'normal' },
+    { x: 0, z: 20, width: 20, height: 50, depth: 20, color: "#00C0FF", type: 'normal' },
+    { x: -170, z: -40, width: 27, height: 66, depth: 20, color: "#800080", type: 'normal' },
+    { x: 200, z: 0, width: 19, height: 35, depth: 19, color: "#8B0000", type: 'normal' },
+    { x: 100, z: 10, width: 25, height: 50, depth: 25, color: "#CD853F", type: 'normal' },
+    { x: -90, z: 45, width: 21, height: 56, depth: 28, color: "#8B4513", type: 'normal' },
+    { x: -180, z: 70, width: 26, height: 46, depth: 26, color: "#FF4503", type: 'normal' },
+    { x: -25, z: 25, width: 40, height: 90, depth: 40, color: "#008000", type: 'normal' }
+];
+            initialBuildings.forEach(b => {
+                const building = createBuilding(b.width, b.height, b.depth, b.x, b.z, b.color, b.type);
+                scene.add(building);
+            });
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+                stats.update();
+            }
+            animate();
+            updateStats();
+        </script>
+    </body>
+    </html>
